@@ -1,0 +1,8 @@
+C:\Users\loren\Downloads\html>
+ng new serverapp
+N
+CSS (invio)
+cd serverapp
+code . (invio)
+
+ng g service service/server

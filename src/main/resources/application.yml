@@ -1,0 +1,105 @@
+# ServerApplication --> 39 abbiamo cambiato l'estensione del file perchè questa configurazione sarà sempre la stessa
+
+spring:
+  datasource:
+    password:
+    # definiamo la posizione del database (localhost perchè il server mysql è eseguito su localhost) e il suo nome.
+    # PRIMA DI AVVIARE L'APP, AVVIARE XAMPP CONTROL PANEL CON APACHE E MYSQL, CREARE SU PHPMYADMIN UN DATABASE VUOTO DI NOME serverdb, ALTRIMENTI L'APP NON VIENE AVVIATA CORRETTAMENTE !!!
+    url: jdbc:mysql://localhost:3306/serverdb
+    username: root
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        # definiamo la versione di Mysql utilizzata
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        # formattiamo i log
+        format_sql: true
+    # mostriamo i log (le operazioni che vengono effettuate sul database)
+    show-sql: true
+
+    # 39a Avviamo l'app e se tutto viene visualizzato correttamente (l'ultimo log nella console deve essere: "
+    # Hibernate: insert / into / server / (status, image_url, ip_address, memory, name, type, id) / values / (?, ?, ?, ?, ?, ?, ?)
+    # ")
+    # dirigiamoci su MySql Workbench --> verifichiamo che i dati siano stati inseriti
+
+    # 39b dirigiamoci su Postman e creiamo una richiesta GET: "http://localhost:8080/server/list" e inviamola. Se tutto funziona correttamente il risultato sarà il seguente:
+    # {
+    #    "timeStamp": "2022-09-12T19:45:45.9695764",
+    #    "statusCode": 200,
+    #    "status": "OK",
+    #    "message": "Servers retrieved",
+    #    "data": {
+    #        "servers": [
+    #            {
+    #                "id": 1,
+    #                "ipAddress": "192.168.1.160",
+    #                "name": "Ubuntu Linux",
+    #                "memory": "16 GB",
+    #                "type": "Personal PC",
+    #                "imageUrl": "http:localhost:8080/server/image/server1.png",
+    #                "status": "SERVER_UP"
+    #            },
+    #            {
+    #                "id": 2,
+    #                "ipAddress": "192.168.1.58",
+    #                "name": "Fedora Linux",
+    #                "memory": "16 GB",
+    #                "type": "Dell Tower",
+    #                "imageUrl": "http:localhost:8080/server/image/server2.png",
+    #                "status": "SERVER_DOWN"
+    #            },
+    #            {
+    #                "id": 3,
+    #                "ipAddress": "192.168.1.21",
+    #                "name": "MS 2008",
+    #                "memory": "32 GB",
+    #                "type": "Web Server",
+    #                "imageUrl": "http:localhost:8080/server/image/server3.png",
+    #                "status": "SERVER_UP"
+    #            },
+    #            {
+    #                "id": 4,
+    #                "ipAddress": "192.168.1.14",
+    #                "name": "Red Hat Enterprise Linux",
+    #                "memory": "64 GB",
+    #                "type": "Mail Server",
+    #                "imageUrl": "http:localhost:8080/server/image/server4.png",
+    #                "status": "SERVER_DOWN"
+    #            }
+    #        ]
+    #    }
+    #}
+    #  "data", definito come tipo di dato Map, viene restituito come un oggetto-array 'servers' composto da elementi, ciascuno di essi costituito da un'accoppiata di chiave-valore, dove la chiave è il tipo di proprietà (id, ipAddress, name, memory...) e il valore è il valore della proprietà stessa, ossia la descrizione dei singoli server che abbiamo caricato immediatamente dopo l'avvio dell'app.
+
+    # 39c testiamo su Postman le altre funzionalità presenti nel controller ServerResource.
+    # Per testare la funzione save, copiamo uno dei server che abbiamo ricevuto dalla richiesta list o get, lo inseriamo nel Body, dopo aver impostato JSON come tipo di testo inviato, e modifichiamo alcuni valori per differenziarlo dai server caricati in precedenza (cancellare l'id, in quanto viene impostato automaticamente, e l'imageUrl in quanto verrà aggiunta in seguito con un'altra funzione). Il risultato sarà:
+    # {
+    #    "timeStamp": "2022-09-12T22:53:19.5832186",
+    #    "statusCode": 201,
+    #    "status": "CREATED",
+    #    "message": "Server create",
+    #    "data": {
+    #        "server": {
+    #            "id": 5,
+    #            "ipAddress": "192.168.1.195",
+    #            "name": "Ubuntu Linux",
+    #            "memory": "32 GB",
+    #            "type": "Lenovo",
+    #            "imageUrl": "org.springframework.web.servlet.support.ServletUriComponentsBuilder@10db48a8",
+    #            "status": "SERVER_DOWN"
+    #        }
+    #    }
+    #}
+    # L'errore su imageUrl è dovuto al fatto che in ServerServiceImpl, nella funzione setServerImageUrl, al posto di:
+    # return ServletUriComponentsBuilder.fromCurrentContextPath().path("/server/image/" + imageNames[new Random().nextInt(4)]).toUriString();
+    # c'era scritto:
+    # return ServletUriComponentsBuilder.fromCurrentContextPath().path("/server/image/" + imageNames[new Random().nextInt(4)]).toString();
+
+    # 39d Se tentiamo di visualizzare un'immagine di un server, cliccandovi sopra dal JSON che ci viene returnato su Postman, notiamo come vi sia un altro errore in ServerResource, nella funzione getServerImage manca uno slash prima di: ... + "Downloads/images/ . Ma è presente un altro errore anche in ServerApplication, manca il doppio slash dopo http: quando creiamo i server. Ma il problema non si è ancora risolto: bisogna rimuovere dalla funzione getServerImage la cartella images dal percorso di ricerca dei file perchè impedisce di trovare le immagini. Con il seguente percorso tutto funziona e tornando su Postman e cliccando su imageUrl di uno dei server ottenuti dopo aver fatto una richiesta GET (list), possiamo visualizzare l'immagine del server che cercavamo. NB ATTENZIONE!!! IN REALTA' L'ERRORE ERA DOVUTO AL FATTO CHE LA CARTELLA CREATA IN Downloads SI CHIAMAVA image INVECE DI images. RIPRISTINANDO IL PERCORSO PREDEFINITO, TUTTO FUNZIONA.
+
+    #39e Nel caso in cui si presentasse questo errore: "java.nio.charset.MalformedInputException: Input length = 1" --> verificare la codifica dei caratteri (in basso a dx su intelliJ) e reimpostare UTF-8, qualora dovesse essere diversa.
+
+    #39f Verifichiamo, sempre con Postman, la funzione ping(). Non funziona, entra in gioco il timeout impostato nella funzione, e lo Status del server viene segnato come DOWN.
+
