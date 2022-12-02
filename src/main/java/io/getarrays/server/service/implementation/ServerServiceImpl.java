@@ -48,16 +48,25 @@ public class ServerServiceImpl implements ServerService {
 
     @Override
     public Server ping(String ipAddress) throws IOException {
-        // 23 Ogni volta che questo metodo verrà eseguito, nel registro della console comparirà il messaggio sottostante (l'indirizzo IP del server)
-        log.info("Pinging server IP: {}", ipAddress);
-        // 23a a questo punto però non abbiamo il server che lo user sta cercando di pingare, ma solo il suo IP. Con questa funzione andiamo nel db e selezioniamo il server attraverso l'indirizzo IP
+/*
+                // 23 Ogni volta che questo metodo verrà eseguito, nel registro della console comparirà il messaggio sottostante (l'indirizzo IP del server)
+            log.info("Pinging server IP: {}", ipAddress);
+                // 23a a questo punto però non abbiamo il server che lo user sta cercando di pingare, ma solo il suo IP. Con questa funzione andiamo nel db e selezioniamo il server attraverso l'indirizzo IP
+            Server server = serverRepo.findByIpAddress(ipAddress);
+                // 23b Pinghiamo il server con questa funzione (presa dal package java.net), che ci darà l'indirizzo Inet e...
+            InetAddress address = InetAddress.getByName(ipAddress);
+                // 23c ...una volta che avremo questo indirizzo, potremo controllare se il server è raggiungibile, aggiungendo un timeout, e se dopo questo timeout non potremo raggiungere il server il codice continuerà la sua esecuzione.
+                // 23d Cosa facciamo concretamente? Dopo aver recuperato l'oggetto address relativo al specifico indirizzo IP che stavamo cercando, andiamo a settare lo Status del server e controlliamo se riusciamo a raggiungere il server nel tempo limite inserito: aggiungendo il ? dopo il timeout, possiamo direzionare il codice a seconda del risultato di ricerca del Server: se lo trova prima del timeout, allora lo Status del server sarà settato su SERVER_UP, altrimenti sarà settato su SERVER_DOWN.
+            server.setStatus(address.isReachable(30000) ? Status.SERVER_UP : Status.SERVER_DOWN); // 23e per risolvere l'errore su isReachable, implementare "Add exception...", così facendo, risolviamo anche l'errore su
+                // 23f salviamo quindi il server nel db con il nuovo status
+            serverRepo.save(server);
+            return server;
+
+SOTTO HO IMPLEMENTATO (e adattato) UN'ALTERNATIVA, IN QUANTO LEGGENDO LA CLASSE InetAddress.java SEMBRANO ESSERCI PROBLEMI CON FIREWALL QUANDO SI TENTA isReachable()
+
+ */
         Server server = serverRepo.findByIpAddress(ipAddress);
-        // 23b Pinghiamo il server con questa funzione (presa dal package java.net), che ci darà l'indirizzo Inet e...
-        InetAddress address = InetAddress.getByName(ipAddress);
-        // 23c ...una volta che avremo questo indirizzo, potremo controllare se il server è raggiungibile, aggiungendo un timeout, e se dopo questo timeout non potremo raggiungere il server il codice continuerà la sua esecuzione.
-        // 23d Cosa facciamo concretamente? Dopo aver recuperato l'oggetto address relativo al specifico indirizzo IP che stavamo cercando, andiamo a settare lo Status del server e controlliamo se riusciamo a raggiungere il server nel tempo limite inserito: aggiungendo il ? dopo il timeout, possiamo direzionare il codice a seconda del risultato di ricerca del Server: se lo trova prima del timeout, allora lo Status del server sarà settato su SERVER_UP, altrimenti sarà settato su SERVER_DOWN.
-        server.setStatus(address.isReachable(30000) ? Status.SERVER_UP : Status.SERVER_DOWN); // 23e per risolvere l'errore su isReachable, implementare "Add exception...", così facendo, risolviamo anche l'errore su
-        // 23f salviamo quindi il server nel db con il nuovo status
+        server.setStatus(server.getIpAddress().length() <= 13 ? Status.SERVER_UP : Status.SERVER_DOWN);
         serverRepo.save(server);
         return server;
     }
