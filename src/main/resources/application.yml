@@ -101,5 +101,6 @@ spring:
 
     #39e Nel caso in cui si presentasse questo errore: "java.nio.charset.MalformedInputException: Input length = 1" --> verificare la codifica dei caratteri (in basso a dx su intelliJ) e reimpostare UTF-8, qualora dovesse essere diversa.
 
-    #39f Verifichiamo, sempre con Postman, la funzione ping(). Non funziona, entra in gioco il timeout impostato nella funzione, e lo Status del server viene segnato come DOWN.
+    #39f Verifichiamo, sempre con Postman, la funzione ping(). Non funziona, entra in gioco il timeout impostato nella funzione, e lo Status del server viene segnato come DOWN. Aggiustato per proseguire. VEDI OneNote
+    # 40 -> ServerApplication.java
 

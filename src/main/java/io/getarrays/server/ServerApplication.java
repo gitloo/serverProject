@@ -7,6 +7,14 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
+// 40 Import per CorsFilter
+
+
+import java.util.Arrays;
 
 // --> ServerResource --> 38 Definiamo un bean di tipo Command Line Runner che verrà eseguito non appena l'applicazione verrà inizializzata e salverà alcuni server
 @SpringBootApplication
@@ -30,5 +38,19 @@ public class ServerApplication {
 	}
 
 	// 38d Ci rimane da configurare la connessione al database --> eliminiamo dalla cartella resources le cartelle static e template: non ne abbiamo bisogno in quanto questa è un'API, quindi non avremo nessun file html. Cambiamo l'estensione file di application.yml in yml --> application.yml
+
+	// 40
+	@Bean
+	public CorsFilter corsFilter() {
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		CorsConfiguration config = new CorsConfiguration();
+		config.setAllowCredentials(true);
+		config.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:4200"));
+		config.setAllowedHeaders(Arrays.asList("Origin", "Access-Control-Allow-Origin", "Content-type", "Accept", "Jwt-Token", "Authorization", "Origin, Accept", "X-Requested-With", "Access-Control-Request-Method", "Access-Control-Request-Headers"));
+		config.setExposedHeaders(Arrays.asList("Origin", "Content-type", "Accept", "Jwt-Token", "Authorization",  "Access-Control-Allow-Origin", "Access-Control-Allow-Origin",  "Access-Control-Allow-Credentials", "Filename"));
+		config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+		source.registerCorsConfiguration("/**", config);
+		return new CorsFilter(source);
+	}
 
 }
